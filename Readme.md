@@ -38,6 +38,8 @@ Cross Value took: 74.64749574661255 seconds
 After cleaning up the samples and throwing out incorrectly labeled images:
 
 ```text
+clf = LogisticRegression(penalty="l2", C=0.0001, solver='saga', multi_class='auto')
+
 Cross Value took: 67.93020796775818 seconds
 [0.84831461 0.85310734 0.87570621 0.8700565  0.89830508]
 0.8690979495969022

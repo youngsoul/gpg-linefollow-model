@@ -80,7 +80,8 @@ def find_logreg_model_params(X,y):
     random_grid = {
             'solver': ['lbfgs', 'newton-cg', 'sag', 'saga'],
             'penalty': ["l2"],
-            'C': [1e-4, 1e-3, 1e-2, 1e-1, 0.5, 1., 5., 10., 15., 20., 25.]
+            'C': [1e-4, 1e-3, 1e-2, 1e-1],
+            'class_weight': [None, 'balanced']
         }
     rf_random = RandomizedSearchCV(estimator=model,
                                    param_distributions=random_grid,
@@ -142,7 +143,7 @@ def train_save_model(model, X, y):
 
 if __name__ == '__main__':
 
-    operation = "eval_model" # "random_sample" #"save_model"
+    operation = "model_params" # "random_sample" #"save_model"
 
     if operation == "model_params":
         X, y = get_image_data()
