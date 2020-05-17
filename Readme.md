@@ -4,7 +4,7 @@ This repo is a support repo for the GoPiGo line following project.
 
 This project was used to explore different models and model hyperparameters before trying to train a model on the Raspberry PI.
 
-Please see my GitHub Repo[TDB]
+Please see my [GitHub Repo](https://github.com/youngsoul/gpg-linefollower) for the project.  This repo has a detailed Readme about the project and process.
 
 ## TPOT
 
