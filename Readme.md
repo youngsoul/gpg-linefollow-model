@@ -1,5 +1,11 @@
 # GoPiGo Line Follower Model Optimizer project
 
+This repo is a support repo for the GoPiGo line following project.
+
+This project was used to explore different models and model hyperparameters before trying to train a model on the Raspberry PI.
+
+Please see my GitHub Repo[TDB]
+
 ## TPOT
 
 This project will use TPOT AutoML to determine the best Model pipeline for the given dataset.
@@ -43,6 +49,25 @@ clf = LogisticRegression(penalty="l2", C=0.0001, solver='saga', multi_class='aut
 Cross Value took: 67.93020796775818 seconds
 [0.84831461 0.85310734 0.87570621 0.8700565  0.89830508]
 0.8690979495969022
+
+```
+
+After reviewing samples again:
+```text
+Cross Value took: 68.83101201057434 seconds
+[0.95530726 0.94972067 0.96648045 0.97206704 0.95530726]
+0.9597765363128492
+
+```
+
+
+More training data
+```text
+clf = LogisticRegression(penalty="l2", C=0.0001, solver='saga', multi_class='auto')
+
+Cross Value took: 88.6061041355133 seconds
+[0.96943231 0.9650655  0.9650655  0.97816594 0.96069869]
+0.9676855895196507
 
 ```
 

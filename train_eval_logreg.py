@@ -1,19 +1,14 @@
 import time
-
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_val_score, cross_val_predict
 from sklearn.model_selection import RandomizedSearchCV
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import confusion_matrix
 from imutils import paths
 import cv2
 import numpy as np
 from joblib import dump, load
-import random
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 import random
 from pathlib import Path
 import string
@@ -45,41 +40,21 @@ def get_image_data():
     return images_vector, direction_vector, image_names
 
 
-def get_model():
-    # these were identified by running find_model_params
-    # params = {'n_estimators': 400, 'min_samples_split': 10, 'min_samples_leaf': 4, 'max_features': 'sqrt', 'max_depth': 90, 'bootstrap': True}
-
-    # params = {'n_estimators': 1600, 'min_samples_split': 2, 'min_samples_leaf': 4, 'max_features': 'sqrt', 'max_depth': 10,'bootstrap': True}
-    # eval_model
-    # [0.79245283 0.77358491 0.77358491 0.7254902  0.78431373]
-    # 0.7698853126156123
-
+def get_logreg_model():
     """
-    params = {'n_estimators': 800, 'min_samples_split': 2, 'min_samples_leaf': 4, 'max_features': 'sqrt', 'max_depth': 90,'bootstrap': True}
-    [0.81203008 0.7593985  0.82706767 0.77692308 0.84615385]
-    0.8043146327356853
+    This function returns the 'best' or model under test instance
+    :return:
+    :rtype:
     """
-
-    params = {'n_estimators': 1600, 'min_samples_split': 10, 'min_samples_leaf': 2, 'max_features': 'auto',
-              'max_depth': None, 'bootstrap': True}
-    """
-    [0.82485876 0.78285714 0.83428571 0.83333333 0.87356322]
-    0.8297796331858283
-    """
-    # clf = RandomForestClassifier(**params)
-
     clf = LogisticRegression(penalty="l2", C=0.0001, solver='saga', multi_class='auto')
-
-    # clf = KNeighborsClassifier(n_neighbors=93, p=1, weights="uniform")
-
     return clf
 
 
-def find_logreg_model_params(X, y):
+def find_best_logreg_model_params(X, y):
     """
     {'solver': 'saga', 'penalty': 'l2', 'C': 0.0001}
-    :param X:
-    :type X:
+    :param X: ndarray of shape ( 60*192 ) = 11520
+    :type X: ndarray
     :param y:
     :type y:
     :return:
@@ -100,45 +75,6 @@ def find_logreg_model_params(X, y):
                                    n_jobs=-1)
     rf_random.fit(X, y)
     print(rf_random.best_params_)
-
-
-def find_model_params(X, y):
-    model = RandomForestClassifier()
-
-    # Number of trees in random forest
-    n_estimators = [int(x) for x in np.linspace(start=200, stop=2000, num=10)]
-    # Number of features to consider at every split
-    max_features = ['auto', 'sqrt']
-    # Maximum number of levels in tree
-    max_depth = [int(x) for x in np.linspace(10, 110, num=11)]
-    max_depth.append(None)
-    # Minimum number of samples required to split a node
-    min_samples_split = [2, 5, 10]
-    # Minimum number of samples required at each leaf node
-    min_samples_leaf = [1, 2, 4]
-    # Method of selecting samples for training each tree
-    bootstrap = [True, False]
-    # Create the random grid
-
-    random_grid = {'n_estimators': n_estimators,
-                   'max_features': max_features,
-                   'max_depth': max_depth,
-                   'min_samples_split': min_samples_split,
-                   'min_samples_leaf': min_samples_leaf,
-                   'bootstrap': bootstrap}
-
-    print(f"Random Parameter Grid:")
-    print(random_grid)
-
-    rf_random = RandomizedSearchCV(estimator=model,
-                                   param_distributions=random_grid,
-                                   n_iter=75, cv=3,
-                                   verbose=2,
-                                   random_state=42,
-                                   n_jobs=-1)
-    rf_random.fit(X, y)
-    print(rf_random.best_params_)
-
 
 def cv_score_model(model, X, y):
     s = time.time()
@@ -194,28 +130,49 @@ def train_save_model(model, X, y):
 
 
 if __name__ == '__main__':
+    """
+    operation:
+    set this string to the operation of interest. 
+    
+    find_best_logreg_model_params: call a function to performa and RandomizedSearchCV for a LogisticRegression model
+                                    Once you have model parameters, update the 'get_logreg_model' function to return
+                                    a LogisticRegression model with this parameters
+    
+    review_predictions: Using the best LogisticRegression Model, predict on the training dataset and display the
+                        training images that were predicted incorrectly.  This can help you reclassify the image
+                        if necessary.
+                        
+    eval_model: Use the best LogisticRegression Model,  run a cross_val_score on the training
+    
+    confusion_matrix: Use the best LogisticRegression Model, run a cross_val_score and display the confusion matrix.
+                      and list the incorrect predictions
+                      
+    save_model: Use the best LogisticRegression Model, train and save the model.  Keep in mind you CANNOT transfer 
+                this saved model to the GoPiGo.  It will not be able to be loaded and executed.
+    
+    random_sample: Use the saved model and randomly select 10 images to display with the actual and predicted value.
+    """
+    operation = "confusion_matrix"  # "random_sample" #"save_model"
 
-    operation = "eval_model"  # "random_sample" #"save_model"
-
-    if operation == "model_params":
+    if operation == "find_best_logreg_model_params":
         X, y, _ = get_image_data()
-        find_logreg_model_params(X, y)
+        find_best_logreg_model_params(X, y)
     elif operation == "review_predictions":
-        model = get_model()
+        model = get_logreg_model()
         X, y, images = get_image_data()
         review_incorrect_predictions(model, X, y, images)
     elif operation == "eval_model":
-        model = get_model()
+        model = get_logreg_model()
         X, y, _ = get_image_data()
         scores = cv_score_model(model, X, y)
         print(scores)
         print(np.mean(scores))
     elif operation == "confusion_matrix":
-        model = get_model()
+        model = get_logreg_model()
         X, y, images = get_image_data()
         cv_predict_cm_model(model, X, y, images)
     elif operation == "save_model":
-        model = get_model()
+        model = get_logreg_model()
         X, y, _ = get_image_data()
         train_save_model(model, X, y)
     elif operation == "random_sample":
@@ -227,7 +184,10 @@ if __name__ == '__main__':
             print(f"Load Image: {imagePath}")
             image = cv2.imread(imagePath)
             image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            image = image.flatten()
+            image_flat = image.flatten()
             actual = imagePath.split("/")[-2]
-            pred = model.predict([image])
+            pred = model.predict([image_flat])
             print(f"Actual: {actual}, Pred: {directions[pred[0]]}")
+            cv2.imshow("Line Image", image)
+            cv2.waitKey(0)
+
